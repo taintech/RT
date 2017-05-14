@@ -21,4 +21,8 @@ class HomeController @Inject() extends Controller {
   def index = Action { implicit request =>
     Ok(views.html.index())
   }
+
+  def landingPage = Action { implicit request =>
+    Ok(views.html.landingpage())
+  }
 }
