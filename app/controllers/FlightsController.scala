@@ -26,18 +26,12 @@ class FlightsController @Inject()(ws: WSClient) extends Controller {
 
   case class Flight(departureAirport: String, arrivalAirport: String)
 
-  case class FlightTrip(stops: Int, legs: Seq[Flight])
-  object FlightTrip {
-    def apply(stops: Int, connections: List[Connection]): FlightTrip =
-      FlightTrip(stops, connections.map { c =>
-        Flight(c.airportFrom, c.airportTo)
-      })
-  }
+  case class FlightTrip(stops: Int, legs: Seq[Connection])
 
-  implicit val flightWrites = new Writes[Flight] {
-    def writes(flight: Flight) = Json.obj(
-      "departureAirport" -> flight.departureAirport,
-      "arrivalAirport" -> flight.arrivalAirport
+  implicit val flightWrites = new Writes[Connection] {
+    def writes(flight: Connection) = Json.obj(
+      "departureAirport" -> flight.airportFrom,
+      "arrivalAirport" -> flight.airportTo
     )
   }
 
@@ -61,7 +55,7 @@ class FlightsController @Inject()(ws: WSClient) extends Controller {
           c2 <- connections
           if c2.airportFrom == departure && c2.airportTo == c1.airportFrom
         } yield Seq(c1, c2)
-        val result = Seq(FlightTrip(0, directFligths.toList)) ++ oneConnectionFlights.map(e => FlightTrip(1, e.toList))
+        val result = Seq(FlightTrip(0, directFligths)) ++ oneConnectionFlights.map(e => FlightTrip(1, e))
         Ok(Json.toJson(result))
       }
       case _ => InternalServerError
